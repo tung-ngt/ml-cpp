@@ -1,113 +1,136 @@
 #include <iostream>
+#include <iomanip>
+#include <initializer_list>
+
 #include "Matrix.h"
-#include <math.h>
 
-using namespace std;
+using std::cout;
+using std::copy;
+using std::initializer_list;
+using std::setw;
+using std::setprecision;
+using std::endl;
 
-Matrix::Matrix() : m(3), n(3)
-{
-    a = new double *[m];
-    for (size_t i = 0; i < m; i++)
-    {
-        a[i] = new double[n];
-        for (size_t j = 0; j < n; j++)
-        {
-            a[i][j] = 0;
-        }
-    }
-}
-Matrix::Matrix(size_t m, size_t n) : m(m), n(n)
-{
-    a = new double *[m];
-    for (size_t i = 0; i < m; i++)
-    {
-        a[i] = new double[n];
-        for (size_t j = 0; j < n; j++)
-        {
-            a[i][j] = 0;
-        }
-    }
-}
-Matrix::Matrix(size_t m, size_t n, double initial_value) : m(m), n(n)
-{
-    a = new double *[m];
-    for (size_t i = 0; i < m; i++)
-    {
-        a[i] = new double[n];
-        for (size_t j = 0; j < n; j++)
-        {
-            a[i][j] = initial_value;
-        }
-    }
-}
+Matrix::Matrix() : rows(0), cols(0), mA(NULL)
+{}
 
 Matrix::~Matrix()
 {
-    for (size_t i = 0; i < m; i++)
-    {
-        delete[] a[i];
-    }
-    delete[] a;
+    cout << "deintialize matrix: \n";
+    show();
+    cleanUp();
 }
 
-void Matrix::transpose()
+Matrix::Matrix(const Matrix &b)
 {
-    double **b;
-    b = new double *[n];
-    for (size_t i = 0; i < n; i++)
+    this->rows = b.rows;
+    this->cols = b.cols;
+
+    this->mA = new double*[this->rows];
+
+
+    for (size_t i = 0; i < rows; i++)
     {
-        b[i] = new double[m];
-        for (size_t j = 0; j < m; j++)
+        this->mA[i] = new double[this->cols];
+        for (size_t j = 0; i < cols; i++)
+        { this->mA[i][j] = b.mA[i][j]; }
+    }
+}
+
+Matrix::Matrix(size_t rows, size_t cols, double **a) : rows(rows), cols(cols)
+{ setMatrix(a); }
+
+Matrix::Matrix(size_t cols, size_t rows, double initialValue): 
+    rows(rows), cols(cols)
+{
+    mA = new double*[rows];
+    for (size_t i = 0; i < rows; i++)
+    {
+        mA[i] = new double[cols];
+        for (size_t j = 0; j < cols; j++)
+        { mA[i][j] = initialValue; }
+    }
+}
+
+
+Matrix::Matrix(initializer_list<initializer_list<double>> initializerMatrix)
+{
+    rows = initializerMatrix.size();
+    cols = initializerMatrix.begin()->size();
+
+    auto pR = initializerMatrix.begin();
+    for (size_t i = 0; i < rows; i++, pR++)
+    {
+        if (pR->size() != cols)
         {
-            b[i][j] = a[j][i];
+            rows = 0;
+            cols = 0;
+            throw "Inconsistent cols";
         }
     }
 
-    for (size_t i = 0; i < m; i++)
+    mA = new double*[rows];
+    auto pI = initializerMatrix.begin();
+    for (size_t i = 0; i < rows; i++, pI++)
     {
-        delete[] a[i];
+        mA[i] = new double[cols];
+        copy(pI->begin(), pI->end(), mA[i]);
     }
-    delete[] a;
-    size_t temp = m;
-    m = n;
-    n = temp;
-    a = b;
 }
+
+void Matrix::cleanUp()
+{
+    if (mA == NULL)
+    { return; }
+    
+    for (size_t i = 0; i < rows; i++)
+    {
+        delete[] mA[i];
+    }
+    delete[] mA;
+}
+
 void Matrix::setMatrix(double **a)
 {
-    this->a = a;
+    cleanUp();
+    this->mA = a;
 }
-Matrix Matrix::T()
+
+Matrix Matrix::T() const
 {
     double **b;
-    b = new double *[n];
-    for (size_t i = 0; i < n; i++)
+    b = new double*[cols];
+    for (size_t i = 0; i < cols; i++)
     {
-        b[i] = new double[m];
-        for (size_t j = 0; j < m; j++)
+        b[i] = new double[rows];
+        for (size_t j = 0; j < rows; j++)
         {
-            b[i][j] = a[j][i];
+            b[i][j] = mA[j][i];
         }
     }
-
-    Matrix t(n, m);
+    Matrix t(rows, cols);
     t.setMatrix(b);
     return t;
 }
-void Matrix::show()
+
+void Matrix::show(size_t colWidth, size_t precision) const
 {
-    for (size_t i = 0; i < m; i++)
+    for (size_t i = 0; i < rows; i++)
     {
-        for (size_t j = 0; j < n; j++)
+        for (size_t j = 0; j < cols; j++)
         {
-            cout.width(12);
-            cout << right << a[i][j];
+            cout << 
+            setw(colWidth) << 
+            std::fixed << 
+            setprecision(precision) << 
+            std::right << 
+            mA[i][j];
         }
         cout << endl;
     }
 }
 
-Matrix Matrix::M(size_t i, size_t j)
+Matrix Matrix::M(size_t i, size_t j) const
 {
     Matrix minor(m - 1, n - 1);
 
@@ -138,171 +161,166 @@ Matrix Matrix::M(size_t i, size_t j)
     return minor;
 }
 
-double recursive_det(Matrix a)
+// double recursive_det(Matrix a)
+// {
+//     double d = 0;
+//     a.show();
+//     cout << endl;
+//     if (a.getM() == 2)
+//         d += a.getEntry(1, 1) * a.getEntry(2, 2) - a.getEntry(2, 1) * a.getEntry(1, 2);
+//     else
+//     {
+//         for (size_t i = 0; i < a.getM(); i++)
+//         {
+//             Matrix m = a.M(1, i + 1);
+//             d += recursive_det(m) * a.getEntry(1, i + 1) * pow(-1, 1 + i + 1);
+//         }
+//     }
+//     cout << d << endl;
+//     return d;
+// }
+
+// double Matrix::calculate_det()
+// {
+//     det = recursive_det(*this);
+//     cout << det << endl;
+//     return det;
+// }
+
+size_t Matrix::getCols() const
 {
-    double d = 0;
-    a.show();
-    cout << endl;
-    if (a.getM() == 2)
-        d += a.getEntry(1, 1) * a.getEntry(2, 2) - a.getEntry(2, 1) * a.getEntry(1, 2);
-    else
+    return cols;
+}
+size_t Matrix::getRows() const
+{
+    return rows;
+}
+
+Matrix Matrix::scale(double scaler) const
+{
+    double **temp = new double*[rows];
+    for (size_t i = 0; i < rows; i++)
     {
-        for (size_t i = 0; i < a.getM(); i++)
-        {
-            Matrix m = a.M(1, i + 1);
-            d += recursive_det(m) * a.getEntry(1, i + 1) * pow(-1, 1 + i + 1);
-        }
+        temp[i] = new double[cols];
+        for (size_t j = 0; j < cols; j++)
+        { temp[i][j] = mA[i][j] * scaler; }
     }
-    cout << d << endl;
-    return d;
-}
 
-double Matrix::calculate_det()
-{
-    det = recursive_det(*this);
-    cout << det << endl;
-    return det;
-}
-
-size_t Matrix::getM()
-{
-    return m;
-}
-size_t Matrix::getN()
-{
-    return n;
-}
-
-void Matrix::scaledBy(double scaler)
-{
-    for (size_t i = 0; i < m; i++)
-    {
-        for (size_t j = 0; j < n; j++)
-        {
-            a[i][j] *= scaler;
-        }
-    }
-}
-
-Matrix Matrix::scale(double scaler)
-{
-    Matrix r(m, n);
-    double **b;
-    b = new double *[m];
-    for (size_t i = 0; i < m; i++)
-    {
-        b[i] = new double[n];
-        for (size_t j = 0; j < n; j++)
-        {
-            b[i][j] = a[j][i] * scaler;
-        }
-    }
-    r.setMatrix(b);
+    Matrix r(rows, cols);
+    r.setMatrix(temp);
     return r;
 }
 
-Matrix Matrix::product(Matrix b)
+Matrix Matrix::product(const Matrix &b) const
 {
-    Matrix product_matrix(m, b.n);
-    double **temp = new double *[m];
-    for (size_t i = 0; i < m; i++)
+    Matrix productMatrix(this->rows, b.cols);
+    double **temp = new double*[this->rows];
+
+    for (size_t i = 0; i < this->rows; i++)
     {
-        temp[i] = new double[b.n];
-        for (size_t j = 0; j < b.n; j++)
+        temp[i] = new double[b.cols];
+        for (size_t j = 0; j < b.cols; j++)
         {
-            double sum_product = 0;
-            for (size_t k = 0; k < n; k++)
+            double sumProduct = 0;
+            for (size_t k = 0; k < this->cols; k++)
             {
-                sum_product += a[i][k] * b.a[k][j];
+                sumProduct += mA[i][k] * b.mA[k][j];
             }
-            temp[i][j] = sum_product;
+            temp[i][j] = sumProduct;
         }
     }
-    product_matrix.setMatrix(temp);
-    return product_matrix;
+    productMatrix.setMatrix(temp);
+    return productMatrix;
 }
 
-double Matrix::getEntry(size_t i, size_t j)
-{
-    return a[i - 1][j - 1];
-}
+Matrix Matrix::operator*(const Matrix &b) const
+{ return product(b); }
 
-Matrix Matrix::inverse()
-{
-    if (calculate_det() == 0)
-    {
-        cout << "Not invertible";
-    }
+Matrix Matrix::operator*(double scaler) const
+{ return scale(scaler); }
 
-    Matrix inverted_matrix(m, n, 0);
+double Matrix::at(size_t i, size_t j) const
+{ return mA[i][j]; }
 
-    double **t = new double *[m];
+Matrix operator*(double scaler, const Matrix &matrix)
+{ return matrix.scale(scaler); }
 
-    for (size_t i = 0; i < m; i++)
-    {
-        t[i] = new double[n * 2];
-        for (size_t j = 0; j < n * 2; j++)
-        {
-            if (j < n)
-            {
-                t[i][j] = a[i][j];
-                continue;
-            }
+// Matrix Matrix::inverse()
+// {
+//     if (calculate_det() == 0)
+//     {
+//         cout << "Not invertible";
+//     }
 
-            if (j - n == i)
-            {
-                t[i][j] = 1;
-                continue;
-            }
+//     Matrix inverted_matrix(m, n, 0);
 
-            t[i][j] = 0;
-        }
-    }
+//     double **t = new double *[m];
 
-    for (size_t leading = 0; leading < n; leading++)
-    {
-        double leading_div = t[leading][leading];
-        for (size_t j = 0; j < n * 2; j++)
-            t[leading][j] /= leading_div;
+//     for (size_t i = 0; i < m; i++)
+//     {
+//         t[i] = new double[n * 2];
+//         for (size_t j = 0; j < n * 2; j++)
+//         {
+//             if (j < n)
+//             {
+//                 t[i][j] = a[i][j];
+//                 continue;
+//             }
 
-        for (size_t i = leading + 1; i < m; i++)
-        {
-            double div = t[i][leading];
-            for (size_t j = 0; j < n * 2; j++)
-            {
-                t[i][j] -= t[leading][j] * div;
-            }
-        }
-    }
+//             if (j - n == i)
+//             {
+//                 t[i][j] = 1;
+//                 continue;
+//             }
 
-    for (size_t leading = n - 1; leading > 0; leading--)
-    {
-        for (int i = leading - 1; i >= 0; i--)
-        {
-            double div = t[i][leading];
-            for (size_t j = leading; j < n * 2; j++)
-            {
-                t[i][j] -= t[leading][j] * div;
-            }
-        }
-    }
+//             t[i][j] = 0;
+//         }
+//     }
 
-    double **f = new double *[m];
+//     for (size_t leading = 0; leading < n; leading++)
+//     {
+//         double leading_div = t[leading][leading];
+//         for (size_t j = 0; j < n * 2; j++)
+//             t[leading][j] /= leading_div;
 
-    for (size_t i = 0; i < m; i++)
-    {
-        f[i] = new double[n];
-        for (size_t j = 0; j < n; j++)
-        {
-            f[i][j] = t[i][j + n];
-        }
-    }
-    for (size_t i = 0; i < m; i++)
-    {
-        delete [] t[i];
-    }
-    delete [] t;
+//         for (size_t i = leading + 1; i < m; i++)
+//         {
+//             double div = t[i][leading];
+//             for (size_t j = 0; j < n * 2; j++)
+//             {
+//                 t[i][j] -= t[leading][j] * div;
+//             }
+//         }
+//     }
 
-    inverted_matrix.setMatrix(f);
-    return inverted_matrix;
-}
+//     for (size_t leading = n - 1; leading > 0; leading--)
+//     {
+//         for (int i = leading - 1; i >= 0; i--)
+//         {
+//             double div = t[i][leading];
+//             for (size_t j = leading; j < n * 2; j++)
+//             {
+//                 t[i][j] -= t[leading][j] * div;
+//             }
+//         }
+//     }
+
+//     double **f = new double *[m];
+
+//     for (size_t i = 0; i < m; i++)
+//     {
+//         f[i] = new double[n];
+//         for (size_t j = 0; j < n; j++)
+//         {
+//             f[i][j] = t[i][j + n];
+//         }
+//     }
+//     for (size_t i = 0; i < m; i++)
+//     {
+//         delete [] t[i];
+//     }
+//     delete [] t;
+
+//     inverted_matrix.setMatrix(f);
+//     return inverted_matrix;
+// }
