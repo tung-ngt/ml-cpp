@@ -121,7 +121,6 @@ Matrix Matrix::identity(size_t size, double scaledBy)
 
 void Matrix::cleanUp()
 {
-
     if (mA == NULL)
     {
         return;
@@ -129,9 +128,16 @@ void Matrix::cleanUp()
 
     for (size_t i = 0; i < mRows; i++)
     {
-        delete[] mA[i];
+        if (mCols == 1)
+            delete mA[i];
+        else
+            delete[] mA[i];
     }
-    delete[] mA;
+    if (mRows == 1)
+        delete mA;
+    else
+        delete[] mA;
+    
 }
 
 void Matrix::setMatrix(double **a)
@@ -504,18 +510,18 @@ bool Matrix::rowAdd(size_t rowI, size_t rowJ, double scaler)
 
 void Matrix::operator=(const Matrix &b)
 {
+    cleanUp();
     this->mRows = b.mRows;
     this->mCols = b.mCols;
     this->mDet = 0;
     this->mHasCalculatedDet = false;
-    cleanUp();
 
-    this->mA = new double *[this->mRows];
+    this->mA = new double *[b.mRows];
 
-    for (size_t i = 0; i < this->mRows; i++)
+    for (size_t i = 0; i < b.mRows; i++)
     {
-        this->mA[i] = new double[this->mCols];
-        for (size_t j = 0; j < this->mCols; j++)
+        this->mA[i] = new double[b.mCols];
+        for (size_t j = 0; j < b.mCols; j++)
         {
             this->mA[i][j] = b.mA[i][j];
         }
