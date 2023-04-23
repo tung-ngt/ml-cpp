@@ -152,7 +152,7 @@ Matrix Matrix::T() const
             b[i][j] = mA[j][i];
         }
     }
-    Matrix t(mRows, mCols);
+    Matrix t(mCols, mRows);
     t.setMatrix(b);
     return t;
 }
