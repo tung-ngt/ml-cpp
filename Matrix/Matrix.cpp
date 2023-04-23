@@ -585,3 +585,43 @@ Matrix operator+(double a, const Matrix &matrix)
 {
     return matrix.add(a);
 }
+
+Matrix Matrix::vStack(const Matrix &b) const throw(IncompatibleShape)
+{
+    if (this->mCols != b.mCols)
+    {
+        throw IncompatibleShape(this->mRows, this->mCols, b.mRows, b.mCols, '-');
+    }
+
+    Matrix result(this->mRows + b.mRows, this->mCols);
+
+    for (size_t i = 0; i < this->mRows; i++)
+        for (size_t j = 0; j < this->mCols; j++)
+            result.mA[i][j] = this->mA[i][j];
+
+    for (size_t i = 0; i < b.mRows; i++)
+        for (size_t j = 0; j < b.mCols; j++)
+            result.mA[i + this->mRows][j] = b.mA[i][j];
+
+    return result;
+}
+
+Matrix Matrix::hStack(const Matrix &b) const throw(IncompatibleShape)
+{
+    if (this->mRows != b.mRows)
+    {
+        throw IncompatibleShape(this->mRows, this->mCols, b.mRows, b.mCols, '|');
+    }
+
+    Matrix result(this->mRows, this->mCols + b.mCols);
+
+    for (size_t j = 0; j < this->mCols; j++)
+        for (size_t i = 0; i < this->mRows; i++)
+            result.mA[i][j] = this->mA[i][j];
+
+    for (size_t j = 0; j < b.mCols; j++)
+        for (size_t i = 0; i < b.mRows; i++)
+            result.mA[i][j + this->mCols] = b.mA[i][j];
+
+    return result;
+}

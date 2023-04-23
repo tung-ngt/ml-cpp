@@ -55,6 +55,9 @@ public:
     Matrix add(double a) const;
     Matrix operator+(double a) const;
 
+    Matrix hStack(const Matrix &b) const throw(IncompatibleShape);
+    Matrix vStack(const Matrix &b) const throw(IncompatibleShape);
+
     bool equals(const Matrix &b) const;
     bool operator==(const Matrix &b) const;
 
