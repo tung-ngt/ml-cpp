@@ -561,8 +561,27 @@ Matrix Matrix::add(const Matrix &b) const throw(IncompatibleShape)
     return result;
 }
 
-
 Matrix Matrix::operator+(const Matrix &b) const throw(IncompatibleShape)
 {
     return add(b);
+}
+
+Matrix Matrix::add(double a) const
+{
+    Matrix result(*this);
+    for (size_t i = 0; i < mRows; i++)
+        for (size_t j = 0; j < mCols; j++)
+            result.mA[i][j] += a;
+
+    return result;
+}
+
+Matrix Matrix::operator+(double a) const
+{
+    return add(a);
+}
+
+Matrix operator+(double a, const Matrix &matrix)
+{
+    return matrix.add(a);
 }

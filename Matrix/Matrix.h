@@ -52,6 +52,9 @@ public:
     Matrix add(const Matrix &b) const throw(IncompatibleShape);
     Matrix operator+(const Matrix &b) const throw(IncompatibleShape);
 
+    Matrix add(double a) const;
+    Matrix operator+(double a) const;
+
     bool equals(const Matrix &b) const;
     bool operator==(const Matrix &b) const;
 
@@ -68,5 +71,6 @@ public:
 };
 
 Matrix operator*(double scaler, const Matrix &matrix);
+Matrix operator+(double a, const Matrix &matrix); 
 
 #endif
