@@ -63,6 +63,9 @@ public:
 
     void operator=(const Matrix &b);
 
+    double norm(size_t p = 2) const;
+    explicit operator double() const;
+
     size_t rows() const;
     size_t cols() const;
 
@@ -70,7 +73,7 @@ public:
 
     Matrix inverse() const;
 
-    void show(size_t colWidth = 5, size_t precision = 1) const;
+    void show(size_t colWidth = 8, size_t precision = 1) const;
 };
 
 Matrix operator*(double scaler, const Matrix &matrix);

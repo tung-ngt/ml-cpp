@@ -631,3 +631,20 @@ Matrix Matrix::hStack(const Matrix &b) const throw(IncompatibleShape)
 
     return result;
 }
+
+double Matrix::norm(size_t p) const
+{
+    double sum = 0;
+    for (size_t i = 0; i < mRows; i++)
+    for (size_t j = 0; j < mCols; j++)
+    sum += std::pow(std::abs(mA[i][j]), p);
+
+    sum = std::pow(sum, 1.0/p);
+    return sum;
+}
+
+Matrix::operator double() const {
+    if (mRows == 1 && mCols == 1)
+    return mA[0][0];
+    return NAN;
+}
