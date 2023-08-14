@@ -18,6 +18,18 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="LinearRegression\LinearRegression.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Matrix\AugmentedMatrix.cpp" />
+    <ClCompile Include="Matrix\Matrix.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LinearRegression\LinearRegression.h" />
+    <ClInclude Include="Matrix\AugmentedMatrix.h" />
+    <ClInclude Include="Matrix\Matrix.h" />
+    <ClInclude Include="Matrix\MatrixExceptions.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
