@@ -3,3 +3,6 @@
 *.exe
 *.o
 Makefile
+.x64/
+/x64/Debug
+/ml-cpp/x64/Debug
